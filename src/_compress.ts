@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-export type Dictionary = Record<string, number>;
-export type PendingDictionary = Record<string, true>;
+export type Dictionary = Map<string, number>;
+export type PendingDictionary = Map<string, true>;
 
 export function _compress(uncompressed: null, bitsPerChar: number, getCharFromInt: (a: number) => string): "";
 export function _compress(uncompressed: string, bitsPerChar: number, getCharFromInt: (a: number) => string): string;
@@ -19,8 +19,8 @@ export function _compress(
     }
 
     let value: number;
-    const context_dictionary: Dictionary = {};
-    const context_dictionaryToCreate: PendingDictionary = {};
+    const context_dictionary: Dictionary = new Map();
+    const context_dictionaryToCreate: PendingDictionary = new Map();
     let context_c = "";
     let context_wc = "";
     let context_w = "";
@@ -33,15 +33,15 @@ export function _compress(
 
     for (let ii = 0; ii < uncompressed.length; ii += 1) {
         context_c = uncompressed.charAt(ii);
-        if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
-            context_dictionary[context_c] = context_dictSize++;
-            context_dictionaryToCreate[context_c] = true;
+        if (!context_dictionary.has(context_c)) {
+            context_dictionary.set(context_c,context_dictSize++);
+            context_dictionaryToCreate.set(context_c, true);
         }
         context_wc = context_w + context_c;
-        if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
+        if (context_dictionary.has(context_wc)) {
             context_w = context_wc;
         } else {
-            if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
+            if (context_dictionaryToCreate.has(context_w)) {
                 if (context_w.charCodeAt(0) < 256) {
                     for (let i = 0; i < context_numBits; i++) {
                         context_data_val = context_data_val << 1;
@@ -96,9 +96,9 @@ export function _compress(
                     context_enlargeIn = Math.pow(2, context_numBits);
                     context_numBits++;
                 }
-                delete context_dictionaryToCreate[context_w];
+                context_dictionaryToCreate.delete(context_w);
             } else {
-                value = context_dictionary[context_w];
+                value = context_dictionary.get(context_w);
                 for (let i = 0; i < context_numBits; i++) {
                     context_data_val = (context_data_val << 1) | (value & 1);
                     if (context_data_position == bitsPerChar - 1) {
@@ -117,13 +117,13 @@ export function _compress(
                 context_numBits++;
             }
             // Add wc to the dictionary.
-            context_dictionary[context_wc] = context_dictSize++;
+            context_dictionary.set(context_wc, context_dictSize++);
             context_w = String(context_c);
         }
     }
     // Output the code for w.
     if (context_w !== "") {
-        if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
+        if (context_dictionaryToCreate.has(context_w)) {
             if (context_w.charCodeAt(0) < 256) {
                 for (let i = 0; i < context_numBits; i++) {
                     context_data_val = context_data_val << 1;
@@ -178,9 +178,9 @@ export function _compress(
                 context_enlargeIn = Math.pow(2, context_numBits);
                 context_numBits++;
             }
-            delete context_dictionaryToCreate[context_w];
+            context_dictionaryToCreate.delete(context_w);
         } else {
-            value = context_dictionary[context_w];
+            value = context_dictionary.get(context_w);
             for (let i = 0; i < context_numBits; i++) {
                 context_data_val = (context_data_val << 1) | (value & 1);
                 if (context_data_position == bitsPerChar - 1) {

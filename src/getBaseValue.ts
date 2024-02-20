@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: MIT
  */
 
-export type Dictionary = Record<string, number>;
-export type DictionaryCollection = Record<string, Dictionary>;
+export type Dictionary = Map<string, number>;
+export type DictionaryCollection = Map<string, Dictionary>;
 
-const baseReverseDic: DictionaryCollection = {};
+const baseReverseDic: DictionaryCollection = new Map();
 
 export function getBaseValue(alphabet: string, character: string): number {
-    if (!baseReverseDic[alphabet]) {
-        baseReverseDic[alphabet] = {};
+    if (!baseReverseDic.has(alphabet)) {
+        baseReverseDic.set(alphabet, new Map());
         for (let i = 0; i < alphabet.length; i++) {
-            baseReverseDic[alphabet][alphabet.charAt(i)] = i;
+            baseReverseDic.get(alphabet)?.set(alphabet.charAt(i), i);
         }
     }
-    return baseReverseDic[alphabet][character];
+    return baseReverseDic.get(alphabet)?.get(character);
 }
